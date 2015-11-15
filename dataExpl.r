@@ -1,0 +1,11 @@
+#Load data
+whales_train<-read.csv('C:/Users/arosenbloom/Documents/UW/Deriving Knowledge from Data at Scale/project/train.csv', header = T)
+
+#Summary of data
+summary(whales_train)
+
+#Length of the training dataset
+nrow(whales_train)
+
+## Number of individual whales in the training set
+length(unique(whales_train$whaleID))
