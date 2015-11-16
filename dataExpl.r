@@ -1,5 +1,5 @@
 #Load data
-whales_train<-read.csv('C:/Users/arosenbloom/Documents/UW/Deriving Knowledge from Data at Scale/project/train.csv', header = T)
+whales_train<-read.csv('train.csv', header = T)
 
 #Summary of data
 summary(whales_train)

@@ -1,26 +1,36 @@
-k = imread('Whale Images\imgs\w_2753.jpg');
-
-images = imageSet('Whale Images\imgs'); % 'imgs': Folder of images
-
-for index=1:500
-
-k = read( images, index );
-
-pathname = images.ImageLocation(index);
-
-filestuff = strsplit(char(pathname),'\');
 
 
+for index=1:height(train)
+    
+filename=train.Image(index);
+
+path=strcat('C:\Users\Eric\Documents\GitHub\UWDS450_rightwhale\cropped training\',filename);
+
+if exist(char(path), 'file') == 2
+    continue;
+end
+    
+ipath = strcat('Whale Images\imgs\', filename);
+
+k = imread(char(ipath));
 hsv = rgb2hsv(k);
+w = zeros(size(hsv));
 
-[w(:,:,1), w(:,:,2),w(:,:,3)] = arrayfun(@(x,y,z) whaledist(x,y,z), hsv(:,:,1), hsv(:,:,2), hsv(:,:,3));
+h = hsv(:,:,1);
+s = hsv(:,:,2);
+v = hsv(:,:,3);
+
+w1 = (v < 0.7).*(s < 0.3).*(h > 0.66);
+
+
+% [w(:,:,1), w(:,:,2),w(:,:,3)] = arrayfun(@(x,y,z) whaledist(x,y,z), hsv(:,:,1), hsv(:,:,2), hsv(:,:,3));
 
 % image(w);
 
-w1 = w(:,:,2);
+% w1 = w(:,:,2);
 
-ksize = size(w1)
-sum(w1(:))/sum(size(w1(:)))
+ksize = size(w1);
+sum(w1(:))/sum(size(w1(:)));
 
 rinc = uint32(ksize(1)/16);
 cinc = uint32(ksize(2)/16);
@@ -43,7 +53,8 @@ for i=1:16
         a(i,j) = sum(block(:));
     end
 end
-display(a);
+
+% display(a);
 
 rsum = max(a,[],2);
 csum = max(a);
@@ -71,9 +82,9 @@ end
 c = imcrop(k,[cinc*cmin,rinc*rmin,cinc*(cmax-cmin),rinc*(rmax-rmin)]);
 
 % image(c);
-path=char(filestuff(length(filestuff)));
 if ( length(c(:))~=0 )
-imwrite(c,path);
+imwrite(c,char(path));
 end
+display(filename);
 clear w w1 block c hsv k a;
 end
