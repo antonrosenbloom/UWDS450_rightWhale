@@ -1,90 +1,63 @@
 
-
+clear;
+load('trainstuff.mat');
 for index=1:height(train)
     
 filename=train.Image(index);
 
 path=strcat('C:\Users\Eric\Documents\GitHub\UWDS450_rightwhale\cropped training\',filename);
 
-if exist(char(path), 'file') == 2
-    continue;
-end
-    
+% if exist(char(path), 'file') == 2
+%     continue;
+% end
+
 ipath = strcat('Whale Images\imgs\', filename);
 
 k = imread(char(ipath));
-hsv = rgb2hsv(k);
-w = zeros(size(hsv));
+ksize = size(k);
 
-h = hsv(:,:,1);
-s = hsv(:,:,2);
-v = hsv(:,:,3);
+[w1, w2] = distCreation(k,index,train,0);
+[center, wpoints] = centerOfMass(w1);
+[centers, spoints]= centerOfMass(w2);
 
-w1 = (v < 0.7).*(s < 0.3).*(h > 0.66);
+% GM = cell(3,1);
+% % Mu = cell(3,1);
+% % sigma = cell(3,1);
+% for z = 1:3
+% GM{z}= fitgmdist(wpoints,z);
+% % Mu(z) = GM{z}.mu
+% % sigma(z) = GM(z).sigma;
+% end
 
+[p,yhat] = lqlingcm(wpoints,center);
 
-% [w(:,:,1), w(:,:,2),w(:,:,3)] = arrayfun(@(x,y,z) whaledist(x,y,z), hsv(:,:,1), hsv(:,:,2), hsv(:,:,3));
-
-% image(w);
-
-% w1 = w(:,:,2);
-
-ksize = size(w1);
-sum(w1(:))/sum(size(w1(:)));
-
-rinc = uint32(ksize(1)/16);
-cinc = uint32(ksize(2)/16);
-
-for i=1:16
-    for j=1:16
-        if i==16
-            if j==16
-                block = w1((1 + (i -1)*rinc):end,(1 + (j-1)*cinc):end);
-            else
-                block = w1((1 + (i -1)*rinc):end,(1 + (j-1)*cinc):(j*cinc));
-            end
-        else 
-            if j==16
-                 block = w1((1 + (i -1)*rinc):(i*rinc),(1 + (j-1)*cinc):end);
-            else
-                 block = w1((1 + (i -1)*rinc):(i*rinc),(1 + (j-1)*cinc):(j*cinc));
-            end
-        end      
-        a(i,j) = sum(block(:));
-    end
+if p == NaN
+    clear w w1 w2  block c hsv k a V C d b p yhat t;
+    continue;
 end
 
-% display(a);
+% % scatter(spoinrs(:,1),spoints(:,2));
+% scatter(spoints(:,1),spoints(:,2));
+% % plot(V(:,1),d,'.b-');
+% hold on
+% plot(center(1),center(2),'gx','linewidth',4);
+% plot(centers(1),centers(2),'kx','linewidth',4);
+% plot(wpoints(:,1),yhat,'r','linewidth',2);
+% hold off
 
-rsum = max(a,[],2);
-csum = max(a);
-threshold = max(a(:))*0.10;
+t = rotateImage(k,p(1),center,0);
 
-rmin = 0;
-cmin = 0;
-rmax = 16;
-cmax = 16;
-for i=1:16
-    if rsum(i) <= threshold & rmin == (i - 1)
-        rmin = i;     
-    end
-    if csum(i) <= threshold & cmin == (i - 1)
-        cmin = i;     
-    end
-    if rsum(17-i) <= threshold & rmax == (17-i)
-        rmax= 16-i;     
-    end
-    if csum(17-i) <= threshold & cmax == (17-i)
-        cmax = 16-i;     
-    end
+[t1, t2] = distCreation(t,index,train,1);
+
+c = croppingDown(t,t1,0);
+
+% if ( length(t(:))~=0 )
+% imwrite(c,char(path));
+% end
+
+if mod(index,10)==0
+    display(index);
 end
 
-c = imcrop(k,[cinc*cmin,rinc*rmin,cinc*(cmax-cmin),rinc*(rmax-rmin)]);
-
-% image(c);
-if ( length(c(:))~=0 )
-imwrite(c,char(path));
-end
-display(filename);
-clear w w1 block c hsv k a;
+clear w w1 w2  c k p yhat t;
 end
